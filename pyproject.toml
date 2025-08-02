@@ -1,0 +1,88 @@
+[project]
+name = "dsa"
+version = "1.0.0"
+description = "Reproduction of the DSA from Transferability of White-box Perturbations: Query-Efficient Adversarial Attacks against Commercial DNN Services"
+readme = "README.md"
+requires-python = "==3.11.*"
+dependencies = [
+    "timm>=0.9.16",
+    "pretrainedmodels>=0.7.4",
+    "yacs>=0.1.8",
+    "six>=1.16.0",
+    "numpy>=1.24.1",
+]
+
+# When using uv, you can use `uv sync --extra cpu` to specify the CPU version of PyTorch to be installed. CUDA 11.8,
+# 12.6 and 12.8 are also supported. 
+
+[project.optional-dependencies]
+cpu = ["torch>=2.1.0", "torchvision>=0.16.0"]
+cu118 = ["torch>=2.1.0", "torchvision>=0.16.0"]
+cu126 = ["torch>=2.1.0", "torchvision>=0.16.0"]
+cu128 = ["torch>=2.1.0", "torchvision>=0.16.0"]
+
+# PyTorch indexes.
+#
+# The following indexes are used to install a specific version of PyTorch. They're only available when `uv` is used.
+
+[tool.uv]
+conflicts = [
+    [
+        { extra = "cpu" },
+        { extra = "cu118" },
+    ],
+    [
+        { extra = "cpu" },
+        { extra = "cu126" },
+    ],
+    [
+        { extra = "cpu" },
+        { extra = "cu128" },
+    ],
+    [
+        { extra = "cu118" },
+        { extra = "cu126" },
+    ],
+    [
+        { extra = "cu118" },
+        { extra = "cu128" },
+    ],
+    [
+        { extra = "cu126" },
+        { extra = "cu128" },
+    ],
+]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu118", extra = "cu118" },
+    { index = "pytorch-cu126", extra = "cu126" },
+    { index = "pytorch-cu128", extra = "cu128" },
+]
+torchvision = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu118", extra = "cu118" },
+    { index = "pytorch-cu126", extra = "cu126" },
+    { index = "pytorch-cu128", extra = "cu128" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
