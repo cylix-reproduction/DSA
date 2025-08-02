@@ -15,16 +15,13 @@ def flatten(x: T, start_dim: int = 1) -> T:
 
 class Distance(ABC):
     @abstractmethod
-    def __call__(self, reference: T, perturbed: T) -> T:
-        ...
+    def __call__(self, reference: T, perturbed: T) -> T: ...
 
     @abstractmethod
-    def clip_perturbation(self, references: T, perturbed: T, epsilon: float) -> T:
-        ...
+    def clip_perturbation(self, references: T, perturbed: T, epsilon: float) -> T: ...
 
     @abstractmethod
-    def normalize(self, x: T) -> T:
-        ...
+    def normalize(self, x: T) -> T: ...
 
 
 class LpDistance(Distance):
@@ -60,7 +57,11 @@ class LpDistance(Distance):
         Returns:
             A 1D tensor with the distances from references to perturbed.
         """
-        norms = torch.linalg.vector_norm(flatten(perturbed - references), self.p, dim=-1, )
+        norms = torch.linalg.vector_norm(
+            flatten(perturbed - references),
+            self.p,
+            dim=-1,
+        )
         return norms
 
     def clip_perturbation(self, references: T, perturbed: T, epsilon) -> T:
@@ -79,7 +80,9 @@ class LpDistance(Distance):
                 clipped_perturbation = torch.clip(p, -epsilon, epsilon)
                 return references + clipped_perturbation
             else:
-                assert isinstance(epsilon, torch.Tensor) and epsilon.shape[0] == p.shape[0]
+                assert (
+                    isinstance(epsilon, torch.Tensor) and epsilon.shape[0] == p.shape[0]
+                )
                 _eps = atleast_kd(epsilon, p.ndim)
                 _eps = _eps.repeat(1, *p.shape[1:])
                 p[p > _eps] = _eps[p > _eps]
@@ -90,7 +93,9 @@ class LpDistance(Distance):
         norms = torch.linalg.vector_norm(flatten(p), self.p, dim=-1)
         norms = torch.maximum(norms, torch.tensor(1e-12))  # avoid divsion by zero
         factor = epsilon / norms
-        factor = torch.minimum(torch.tensor(1), factor)  # clipping -> decreasing but not increasing
+        factor = torch.minimum(
+            torch.tensor(1), factor
+        )  # clipping -> decreasing but not increasing
         if self.p == 0:
             if (factor == 1).all():
                 return perturbed

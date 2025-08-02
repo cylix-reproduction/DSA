@@ -2,21 +2,25 @@ import math
 
 import pretrainedmodels
 import timm
-
 from munch import munchify
-from pretrainedmodels.utils import ToSpaceBGR, ToRange255
+from pretrainedmodels.utils import ToRange255, ToSpaceBGR
 from timm import create_model
-from timm.data import IMAGENET_DEFAULT_MEAN
 from torchvision.transforms import transforms
 
 from .base import Model
 
 
-def get_pretrained_model(model_name: str, num_classes=1000, pretrained='imagenet') -> Model:
+def get_pretrained_model(
+    model_name: str,
+    num_classes=1000,
+    pretrained="imagenet",
+) -> Model:
     if model_name not in pretrainedmodels.model_names:
         # use timm to laod pretrained models
         model = create_model(model_name, pretrained=(pretrained is not None))
-        transform = timm.data.create_transform(**timm.data.resolve_data_config(model.pretrained_cfg))
+        transform = timm.data.create_transform(
+            **timm.data.resolve_data_config(model.pretrained_cfg)
+        )
         transform.transforms.pop(2)
     else:
         # use the lib `pretrainedmodels` to load models
@@ -42,10 +46,16 @@ class TransformImage(object):
     and the to_tensor transform operation has been changed
     """
 
-    def __init__(self, opts, scale=0.875, random_crop=False,
-                 random_hflip=False, random_vflip=False,
-                 preserve_aspect_ratio=True):
-        if type(opts) == dict:
+    def __init__(
+        self,
+        opts,
+        scale=0.875,
+        random_crop=False,
+        random_hflip=False,
+        random_vflip=False,
+        preserve_aspect_ratio=True,
+    ):
+        if isinstance(opts, dict):
             opts = munchify(opts)
         self.input_size = opts.input_size
         self.input_space = opts.input_space
@@ -61,7 +71,9 @@ class TransformImage(object):
 
         tfs = []
         if preserve_aspect_ratio:
-            tfs.append(transforms.Resize(int(math.floor(max(self.input_size) / self.scale))))
+            tfs.append(
+                transforms.Resize(int(math.floor(max(self.input_size) / self.scale)))
+            )
         else:
             height = int(self.input_size[1] / self.scale)
             width = int(self.input_size[2] / self.scale)
@@ -79,7 +91,7 @@ class TransformImage(object):
             tfs.append(transforms.RandomVerticalFlip())
 
         # tfs.append(transforms.ToTensor())  # lcy modify
-        tfs.append(ToSpaceBGR(self.input_space == 'BGR'))
+        tfs.append(ToSpaceBGR(self.input_space == "BGR"))
         tfs.append(ToRange255(max(self.input_range) == 255))
         tfs.append(transforms.Normalize(mean=self.mean, std=self.std))
 

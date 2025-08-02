@@ -1,12 +1,10 @@
 import time
-from typing import List
 
 import numpy as np
 import torch
 
 
 class Result:
-
     def __init__(self, batch: int, query_budget: int = np.inf):
         self.time_cost = 0
         self.query = np.zeros(batch, dtype=int)
@@ -16,7 +14,13 @@ class Result:
         self.start_time = time.time()
         self.updated = False
 
-    def update(self, success: torch.BoolTensor, query: int, distance: torch.tensor, hist=False):
+    def update(
+        self,
+        success: torch.BoolTensor,
+        query: int,
+        distance: torch.tensor,
+        hist=False,
+    ):
         """
         update total query and success
         :param distance: distance to originals
@@ -25,12 +29,18 @@ class Result:
         :param success: the success status of this candidate
         :return: None
         """
-        _success = success.cpu().numpy() if query <= self.budget else np.zeros(success.shape, dtype=bool)
+        _success = (
+            success.cpu().numpy()
+            if query <= self.budget
+            else np.zeros(success.shape, dtype=bool)
+        )
         self.updated = (~self.successed & _success).any()
         query = min(self.budget, query)
         # not success before but success this time should update query
         self.query[~self.successed] = query
-        self.distance[~self.successed] = distance[~self.successed].detach().cpu().numpy()
+        self.distance[~self.successed] = (
+            distance[~self.successed].detach().cpu().numpy()
+        )
         self.successed = self.successed | _success
         self.time_cost = time.time() - self.start_time
 
@@ -46,10 +56,12 @@ class Result:
         return self.query[self.successed], self.distance[self.successed]
 
     def __repr__(self) -> str:
-        value = f"@distance = {self.distance.mean().item():.4f} " \
-                f"@query = {self.query.mean().item():.4f} " \
-                f"@success = {self.successed.mean().item():.2%} " \
-                f"@time cost = {self.time_cost:.4f}"
+        value = (
+            f"@distance = {self.distance.mean().item():.4f} "
+            f"@query = {self.query.mean().item():.4f} "
+            f"@success = {self.successed.mean().item():.2%} "
+            f"@time cost = {self.time_cost:.4f}"
+        )
         return value
 
     @property

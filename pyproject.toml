@@ -86,3 +86,6 @@ explicit = true
 name = "pytorch-cu128"
 url = "https://download.pytorch.org/whl/cu128"
 explicit = true
+
+[tool.basedpyright]
+typeCheckingMode = "off"

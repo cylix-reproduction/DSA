@@ -1,5 +1,5 @@
 import ssl
-from typing import TypeVar, Any, Union, Tuple, NamedTuple, Callable
+from typing import Any, Callable, NamedTuple, Tuple, TypeVar, Union
 
 import pretrainedmodels
 import torch
@@ -23,8 +23,12 @@ class Bounds(NamedTuple):
 
 
 class Model(nn.Module):
-    def __init__(self, model: nn.Module, bounds: Union[Bounds, Tuple[float, float]] = (0, 1),
-                 device: Any = None) -> None:
+    def __init__(
+        self,
+        model: nn.Module,
+        bounds: Union[Bounds, Tuple[float, float]] = (0, 1),
+        device: Any = None,
+    ) -> None:
         super().__init__()
         self.model = model.to(device)
         self.bounds = Bounds(*bounds)
@@ -43,18 +47,19 @@ class ModelList:
     bounds = Bounds(0, 1)
 
     def __init__(
-            self,
-            model_dir,
-            model_names,
-            dataset_name: str = "ImageNet",
-            loss_fn: Callable = None,
-            device=None
+        self,
+        model_dir,
+        model_names,
+        dataset_name: str = "ImageNet",
+        loss_fn: Callable = None,
+        device=None,
     ):
-
         ssl._create_default_https_context = ssl._create_unverified_context
         self.model_dir = torch.hub.get_dir()
         self.dataset_name = dataset_name
-        self.model_names = model_names if isinstance(model_names, list) else [model_names]
+        self.model_names = (
+            model_names if isinstance(model_names, list) else [model_names]
+        )
         if device is None:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.available_models = pretrainedmodels.model_names
@@ -64,6 +69,7 @@ class ModelList:
 
     def get_models(self):
         from models.utils import get_model
+
         for name in self.model_names:
             # print(name)
             model = get_model(name, self.dataset_name).to("cpu")
@@ -98,5 +104,3 @@ class ModelList:
 
     def __str__(self):
         return "-".join(sorted(self.model_names))
-
-

@@ -3,9 +3,9 @@ from yacs.config import CfgNode as CN
 cfg = CN()
 cfg.dataset = CN()
 # dataset root dir
-cfg.dataset.root_dir = r"your_imagenet_root_dir" # e.g., "/path/to/imagenet"
+cfg.dataset.root_dir = r"your_imagenet_root_dir"  # e.g., "/path/to/imagenet"
 
-cfg.dataset.name = 'ImageNet'
+cfg.dataset.name = "ImageNet"
 if cfg.dataset.name in ["ImageNet"]:
     cfg.dataset.shape = [3, 299, 299]
     cfg.dataset.num_classes = 1000
@@ -32,13 +32,11 @@ cfg.attack.eps = 16 / 255  # perturbation threshold
 
 
 def get_cfg_defaults():
-    """ Get a yacs CfgNode object with default values for my_project.
-    """
+    """Get a yacs CfgNode object with default values for my_project."""
     return cfg.clone()
 
 
 def update_cfg(cfg, cfg_file):
-    """ Updating the configuration
-    """
+    """Updating the configuration"""
     cfg.merge_from_file(cfg_file)
     return cfg.clone()

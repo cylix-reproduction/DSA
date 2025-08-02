@@ -1,7 +1,6 @@
-from abc import abstractmethod, ABC
-from typing import Callable, TypeVar, Any, Optional
+from abc import ABC, abstractmethod
+from typing import Any, Callable, Optional, TypeVar
 
-import numpy as np
 import torch
 from torch import nn
 
@@ -9,6 +8,7 @@ from models.base import Model, ModelList
 from utils.criterion import Criterion, Misclassification
 from utils.distance import Distance, flatten
 from utils.result import Result
+
 from .utils import get_criterion, raise_if_kwargs
 
 T = TypeVar("T", bound=torch.Tensor)
@@ -16,8 +16,7 @@ T = TypeVar("T", bound=torch.Tensor)
 
 class Optimizer(ABC):
     @abstractmethod
-    def __call__(self, gradient):
-        ...
+    def __call__(self, gradient): ...
 
 
 class GDOptimizer(Optimizer):
@@ -26,8 +25,8 @@ class GDOptimizer(Optimizer):
         self.norm_fn = norm_fn
 
     def __call__(
-            self,
-            gradient: T,
+        self,
+        gradient: T,
     ) -> T:
         return self.stepsize * self.norm_fn(gradient)
 
@@ -51,22 +50,20 @@ class BaseGradientDescent(ABC):
     result: Result
 
     def __init__(
-            self,
-            *,
-            abs_stepsize: Optional[float] = None,
-            steps: int = 10,
-            random_start: bool = False,
-            epsilon: float = 16 / 255,
-            **kwargs,
+        self,
+        *,
+        abs_stepsize: Optional[float] = None,
+        steps: int = 10,
+        random_start: bool = False,
+        epsilon: float = 16 / 255,
+        **kwargs,
     ):
         self.abs_stepsize = abs_stepsize
         self.steps = steps
         self.random_start = random_start
         self.epsilon = epsilon
 
-    def get_loss_fn(
-            self, model: Model, labels: T
-    ) -> Callable[[T], T]:
+    def get_loss_fn(self, model: Model, labels: T) -> Callable[[T], T]:
         # can be overridden by users
         loss_fn = nn.CrossEntropyLoss()
 
@@ -88,32 +85,33 @@ class BaseGradientDescent(ABC):
         return GDOptimizer(stepsize, norm_fn=self.distance.normalize)
 
     def value_and_grad(
-            # can be overridden by users
-            self,
-            loss_fn,
-            x: T,
+        # can be overridden by users
+        self,
+        loss_fn,
+        x: T,
     ) -> T:
         loss = loss_fn(x)
         return torch.autograd.grad(loss, x)[0]
 
     @property
     @abstractmethod
-    def distance(self) -> Distance:
-        ...
+    def distance(self) -> Distance: ...
 
     def run(
-            self,
-            target_model: Model,
-            inputs: T,
-            criterion: Criterion,
-            *,
-            starting_points,
-            **kwargs: Any,
+        self,
+        target_model: Model,
+        inputs: T,
+        criterion: Criterion,
+        *,
+        starting_points,
+        **kwargs: Any,
     ) -> T:
         raise_if_kwargs(kwargs)
         x0 = inputs.clone()
         criterion_ = get_criterion(criterion)
-        self.is_adversarial = is_adversarial = get_is_adversarial(criterion, target_model)  # result criterion
+        self.is_adversarial = is_adversarial = get_is_adversarial(
+            criterion, target_model
+        )  # result criterion
         self.result = Result(inputs.shape[0])
         # the model which generate adversarial examples
         # if local model is None -> white box attack, else -> transfer attack
@@ -149,19 +147,20 @@ class BaseGradientDescent(ABC):
             x = x + gradient_step_sign * self.optimizer(gradients)
             x = self.distance.clip_perturbation(x0, x, epsilon)
             x = torch.clip(x, *models.bounds)
-        self.result.update(is_adversarial(x), is_adversarial.query, self.distance(x0, x))
+        self.result.update(
+            is_adversarial(x), is_adversarial.query, self.distance(x0, x)
+        )
         return x
 
-    def get_random_start(self, x0: T, epsilon: float) -> T:
-        ...
+    def get_random_start(self, x0: T, epsilon: float) -> T: ...
 
     def __call__(  # type: ignore
-            self,
-            model: Model,
-            inputs: T,
-            criterion: Any,
-            starting_points: Optional[T],
-            **kwargs: Any,
+        self,
+        model: Model,
+        inputs: T,
+        criterion: Any,
+        starting_points: Optional[T],
+        **kwargs: Any,
     ):
         # verify_input_bounds(inputs, model)
         criterion = get_criterion(criterion)
@@ -169,7 +168,9 @@ class BaseGradientDescent(ABC):
         inputs_clone = inputs.cpu().numpy()
 
         # run the actual attack
-        xp = self.run(model, inputs, criterion, starting_points=starting_points, **kwargs)
+        xp = self.run(
+            model, inputs, criterion, starting_points=starting_points, **kwargs
+        )
         xp = xp.detach().cpu()
 
         # make sure inputs do not change when attack running
@@ -187,17 +188,18 @@ class BaseGradientDescent(ABC):
 
 class MinimizationAttack:
     """Minimization attacks try to find adversarials with minimal perturbation sizes"""
+
     optimizer: Optimizer
 
     @abstractmethod
     def run(
-            self,
-            model,
-            inputs: T,
-            criterion: Any,
-            *,
-            starting_points: Optional[T] = None,
-            **kwargs: Any,
+        self,
+        model,
+        inputs: T,
+        criterion: Any,
+        *,
+        starting_points: Optional[T] = None,
+        **kwargs: Any,
     ) -> T:
         """Runs the attack and returns perturbed inputs.
 
@@ -209,19 +211,18 @@ class MinimizationAttack:
 
     @property
     @abstractmethod
-    def distance(self) -> Distance:
-        ...
+    def distance(self) -> Distance: ...
 
     def __repr__(self):
         return self.__class__.__name__
 
     def __call__(  # type: ignore
-            self,
-            model: Model,
-            inputs: T,
-            criterion: Any,
-            starting_points: Optional[T],
-            **kwargs: Any,
+        self,
+        model: Model,
+        inputs: T,
+        criterion: Any,
+        starting_points: Optional[T],
+        **kwargs: Any,
     ):
         # verify_input_bounds(inputs, model)
         criterion = get_criterion(criterion)
@@ -229,7 +230,9 @@ class MinimizationAttack:
         inputs_clone = inputs.cpu().numpy()
 
         # run the actual attack
-        xp = self.run(model, inputs, criterion, starting_points=starting_points, **kwargs)
+        xp = self.run(
+            model, inputs, criterion, starting_points=starting_points, **kwargs
+        )
         xp = xp.detach().cpu()
 
         # check inputs do not change when attack running

@@ -1,6 +1,4 @@
-import os
-import pickle
-from typing import Tuple, TypeVar, Dict, Any, Callable, List
+from typing import Any, Callable, Dict, Tuple, TypeVar
 
 import torch
 import torch.nn as nn
@@ -11,35 +9,46 @@ from utils.criterion import Criterion, Misclassification
 T = TypeVar("T", bound=torch.Tensor)
 
 
-def calc_dist(origin_input: torch.Tensor, target_input: torch.Tensor, norm: str, keepdim: bool = False) -> torch.Tensor:
-    ''' Calculating the distance between original input and target input in some norms
+def calc_dist(
+    origin_input: torch.Tensor,
+    target_input: torch.Tensor,
+    norm: str,
+    keepdim: bool = False,
+) -> torch.Tensor:
+    """Calculating the distance between original input and target input in some norms
 
     Args:
         origin_input (torch.Tensor): original input
         target_input (torch.Tensor): target input
         norm (Any): order of the norm ['l2', 'linf']
         keepdim (bool): keep dimensions of output or not
-    '''
-    if norm not in ['l2', 'linf']:
-        raise NotImplementedError('Norm must in np.inf, 2')
+    """
+    if norm not in ["l2", "linf"]:
+        raise NotImplementedError("Norm must in np.inf, 2")
 
     batch_size = origin_input.shape[0]
     diff = (origin_input - target_input).reshape(batch_size, -1)
 
-    if norm == 'l2':
+    if norm == "l2":
         dist = torch.norm(diff, p=2, dim=1, keepdim=keepdim)
-    elif norm == 'linf':
-        dist = torch.norm(diff, p=float('inf'), dim=1, keepdim=keepdim)
+    elif norm == "linf":
+        dist = torch.norm(diff, p=float("inf"), dim=1, keepdim=keepdim)
     return dist
 
 
 @torch.no_grad()
-def make_decision(model: nn.Module, origin_input: torch.Tensor, origin_label: torch.Tensor,
-                  target_label: torch.Tensor, clip_min: float, clip_max: float, targeted: bool) -> Tuple[
-    float, torch.Tensor]:
-    ''' Make a decision.
+def make_decision(
+    model: nn.Module,
+    origin_input: torch.Tensor,
+    origin_label: torch.Tensor,
+    target_label: torch.Tensor,
+    clip_min: float,
+    clip_max: float,
+    targeted: bool,
+) -> Tuple[float, torch.Tensor]:
+    """Make a decision.
         Decision function output 1 on the desired side of the boundary, 0 otherwise.
-    
+
     Args:
         model (nn.Module): black-box model
         origin_input (torch.Tensor): original input
@@ -48,15 +57,15 @@ def make_decision(model: nn.Module, origin_input: torch.Tensor, origin_label: to
         clip_min (float): minimal number of image
         clip_max (float): maximal number of image
         targeted (bool): targeted attacks or not
-    '''
+    """
     clipped_input = torch.clamp(origin_input, clip_min, clip_max)
-    if hasattr(model, 'detecting') is True and model.detecting is True:
+    if hasattr(model, "detecting") is True and model.detecting is True:
         logit, result = model(clipped_input)
     else:
         logit = model(clipped_input)
     pred = torch.argmax(logit, dim=1)
 
-    if hasattr(model, 'detecting') is True and model.detecting is True:
+    if hasattr(model, "detecting") is True and model.detecting is True:
         if targeted is True:
             return (pred == target_label).float(), pred, result
         return (pred != origin_label).float(), pred, result
@@ -103,6 +112,7 @@ def get_random_start(inputs, epsilon, p=2):
         return inputs + torch.zeros_like(inputs).uniform_(-epsilon, epsilon)
     elif p == 2:
         from utils.distance import flatten
+
         batch_size, n = flatten(inputs).shape
         x = torch.randn(batch_size, n + 1)
         r = torch.norm(x, dim=-1, keepdim=True)

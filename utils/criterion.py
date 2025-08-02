@@ -10,8 +10,7 @@ class Criterion(ABC):
     """Abstract base class to implement new criteria."""
 
     @abstractmethod
-    def __repr__(self) -> str:
-        ...
+    def __repr__(self) -> str: ...
 
     @abstractmethod
     def __call__(self, outputs: T) -> T:
@@ -44,8 +43,9 @@ class Misclassification(Criterion):
 
     def __call__(self, outputs: T) -> T:
         classes = outputs.argmax(dim=-1)
-        assert classes.shape == self.labels.shape, \
+        assert classes.shape == self.labels.shape, (
             f"Error: shape is not equal,classes:{classes.shape} while labels:{self.labels.shape}"
+        )
         is_adv = classes != self.labels
         return is_adv
 
@@ -67,7 +67,8 @@ class TargetedMisclassification(Criterion):
 
     def __call__(self, outputs: T) -> T:
         classes = outputs.argmax(dim=-1)
-        assert classes.shape == self.target_classes.shape, \
+        assert classes.shape == self.target_classes.shape, (
             f"Error: shape is not equal,classes:{classes.shape} while labels:{self.target_classes.shape}"
+        )
         is_adv = classes == self.target_classes
         return is_adv
