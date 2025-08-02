@@ -10,6 +10,7 @@ dependencies = [
     "yacs>=0.1.8",
     "six>=1.16.0",
     "numpy>=1.24.1",
+    "scipy>=1.16.1",
 ]
 
 # When using uv, you can use `uv sync --extra cpu` to specify the CPU version of PyTorch to be installed. CUDA 11.8,
