@@ -7,3 +7,5 @@ resources
 *.pdf
 *.jpg
 *.png
+
+data/
