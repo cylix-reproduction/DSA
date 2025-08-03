@@ -1,4 +1,92 @@
-# Transferability of White-box Perturbations: Query-Efficient Adversarial Attacks against Commercial DNN Services
+# DSA
+
+Reproduction of the paper [*Transferability of White-box Perturbations: Query-Efficient Adversarial Attacks against Commercial DNN Services*](https://www.usenix.org/conference/usenixsecurity24/presentation/shen-meng), forked from the [original repo](https://github.com/lcycode/DSA).
+
+> **NOTE**
+>
+> This is a *reproduction* repo. If you're working on the basis of the paper, please don't forget to cite the authors. See [citation](#-citation) for detail.
+>
+> To show respect for the original work, the original content is placed at the end of this README.
+
+- [DSA](#dsa)
+  - [Setting up environments](#setting-up-environments)
+    - [Installing UV](#installing-uv)
+    - [Preparing dataset](#preparing-dataset)
+    - [Syncing dependencies](#syncing-dependencies)
+  - [Running demo](#running-demo)
+- [\<Original README\> Transferability of White-box Perturbations: Query-Efficient Adversarial Attacks against Commercial DNN Services](#original-readme-transferability-of-white-box-perturbations-query-efficient-adversarial-attacks-against-commercial-dnn-services)
+- [🔥Design](#design)
+- [🚀QuickStart](#quickstart)
+  - [Requirements](#requirements)
+  - [Config](#config)
+  - [Run](#run)
+- [📄 Citation](#-citation)
+- [🎉Compatibility](#compatibility)
+- [💡 Questions?](#-questions)
+
+## Setting up environments
+This repo replaced the old-fashioned `requirements.txt` with the [PEP 517](https://peps.python.org/pep-0517/) defined `pyproject.toml`, which is recommended by the official guide. You should use a package manager (UV, PDM, Poetry) to resolve this. This project is organized using [UV](https://docs.astral.sh/uv).
+
+### Installing UV
+If you don't have UV installed, use the following command to install it.
+
+**macOS/Linux**
+```shell
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+**Windows**
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+**Cargo**
+```shell
+cargo install --git https://github.com/astral-sh/uv uv
+```
+
+For more installation methods, see the [official installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+
+### Preparing dataset
+
+Currently, the code only supports the [ImageNet](https://image-net.org/) dataset. More precisely, the [ILSVRC 2012](https://image-net.org/challenges/LSVRC/2012/index.php) dataset is used. According to [`torchvision.dataset.ImageNet`](https://docs.pytorch.org/vision/stable/generated/torchvision.datasets.ImageNet.html), it is required to download ImageNet 2012 dataset from [here](https://image-net.org/challenges/LSVRC/2012/2012-downloads.php) and place the following files:
+
+- `ILSVRC2012_devkit_t12.tar.gz`
+- `ILSVRC2012_img_train.tar`
+- `ILSVRC2012_img_test.tar`
+- `ILSVRC2012_img_val.tar`
+
+into a specific directory, and specify the path of this directory in [`config/attack_config.py`](config/attack_config.py).
+
+### Syncing dependencies
+This repo configures all the dependencies and the Python interpreter for you. You just need to run
+
+```shell
+uv sync --extra cpu
+```
+
+to create a virtual environment, install dependencies including a CPU version of PyTorch. For CUDA 11.8, 12.6 and 12.8, use
+
+```shell
+uv sync --extra cu118
+# or
+uv sync --extra cu126
+# or
+uv sync --extra cu128
+```
+
+to install the corresponding PyTorch version respectively.
+
+## Running demo
+If the environment is configured according to the instructions above, you can use
+
+```shell
+uv run demo.py
+```
+
+to run the provided demo. The required pretrained models will be downloaded from the Internet automatically, so make sure your network condition is fine.
+
+# <mark>&lt;Original README&gt;</mark> Transferability of White-box Perturbations: Query-Efficient Adversarial Attacks against Commercial DNN Services
 
 This is a PyTorch implementation of DSA, a powerful black-box adversarial attack, as described in the following:
 > Meng Shen, Changyue Li, Qi Li, Hao Lu, Liehuang Zhu, and Ke Xu. Transferability of Whitebox Perturbations: Query-Efficient Adversarial Attacks against Commercial DNN Services. Proceedings of the 33rd USENIX Conference on Security Symposium (USENIX Security), 2024.
