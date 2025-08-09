@@ -1,3 +1,9 @@
+# Gitfile used to redirect gitdir (.git directory)
+#
+# This is included by Hatchling by default, so we must ignore it explicitly. This file is Git metadata and will not
+# affect Git behavior.
+.git
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
